@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hack Computer Lab — ETCNTC301 Capstone · Jatin Rajour</title>
+<meta name="description" content="NAND to Tetris capstone: HDL computer, Python assembler and the Hack Box program running on a live software CPU.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233F4B27'/%3E%3Crect x='8' y='8' width='16' height='16' rx='3' fill='none' stroke='%23F6F2E1' stroke-width='2'/%3E%3Crect x='13' y='13' width='6' height='6' fill='%23F6F2E1'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-step" viewBox="0 0 24 24"><path d="M5 5.5v13L14 12zM19 5v14"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 5v5h5"/><path d="M5.5 14a7 7 0 1 0 1.2-7.5L4 10"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-2.9 7.6-7 9.5-4.1-1.9-7-5.2-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M6.5 13.5h.01M10 13.5h.01M13.5 13.5h.01M17 13.5h.01"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a9 9 0 1 1 16 0"/><path d="M12 13l4-4"/><path d="M4 17h16"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="10" rx="1.5"/><path d="M8 10h8M8 13h5"/><path d="M7 19v2M12 19v2M17 19v2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12.5 15H17"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></symbol>
+  <symbol id="i-stack" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M9 21h6M12 17v4"/></symbol>
+  <symbol id="i-at" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-4 7.5"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#home">
+      <span class="brand-mark"><svg class="icon"><use href="#i-cpu"/></svg></span>
+      <span class="brand-text">
+        <strong>HACK COMPUTER LAB</strong>
+        <small>NAND TO TETRIS · ETCNTC301 · KRMU</small>
+      </span>
+    </a>
+    <nav class="nav" id="mainNav">
+      <a href="#home" class="active">HOME</a>
+      <a href="#part-a">PART A</a>
+      <a href="#part-b">PART B</a>
+      <a href="#part-c">PART C</a>
+      <a href="#submission">SUBMISSION</a>
+    </nav>
+    <div class="topbar-actions">
+      <div class="roll-chip">
+        <span>ROLL <b id="rollChipNum">2501630022</b></span>
+        <span class="roll-k">Parameter K = <b id="rollChipK">22</b></span>
+      </div>
+      <a class="btn btn-cream btn-sm" href="#part-c" id="navEmulator"><svg class="icon"><use href="#i-play"/></svg>Box Emulator</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ======================= HOME ======================= -->
+<section id="home" class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="hero-badge"><span class="dot"></span>ETCNTC301 · K.R. Mangalam University · Individual Capstone</span>
+      <h1 class="hero-title">MAKE THE<br>COMPUTER<br><em>DRAW A BOX.</em></h1>
+      <p class="hero-lead">Build the Hack computer. Create your own assembler. Execute machine code. Watch your computer draw.</p>
+      <div class="hero-cta">
+        <a class="btn btn-cream" href="#part-a"><svg class="icon"><use href="#i-chip"/></svg>Explore Part A: HDL</a>
+        <a class="btn btn-ghost" href="#part-c"><svg class="icon"><use href="#i-keyboard"/></svg>Launch Box Emulator</a>
+        <a class="link-arrow" href="#submission">Deliverables Checklist <span>→</span></a>
+      </div>
+    </div>
+
+    <aside class="card rubric">
+      <div class="rubric-head">
+        <div>
+          <span class="eyebrow">CAPSTONE SPECIFICATION</span>
+          <h3>Assignment Rubric</h3>
+        </div>
+        <span class="pill-soft">10 Marks Total</span>
+      </div>
+      <div class="rubric-rows">
+        <div class="rubric-row"><div><b>Part A: HDL Computer</b><small>CPU, Memory &amp; Computer Chips</small></div><span class="marks">2.5 Marks</span></div>
+        <div class="rubric-row"><div><b>Part B: Python Assembler</b><small>Two-pass parser + K mod 3 check</small></div><span class="marks">3.0 Marks</span></div>
+        <div class="rubric-row"><div><b>Part C: Box Program</b><small>Box.asm &amp; Interactive Drawing</small></div><span class="marks">2.5 Marks</span></div>
+        <div class="rubric-row"><div><b>Viva Voce Defence</b><small>On-the-spot code modifications</small></div><span class="marks">2.0 Marks</span></div>
+      </div>
+      <a class="btn btn-dark rubric-cta" href="#part-c">OPEN LIVE SOFTWARE EMULATOR <span>→</span></a>
+    </aside>
+  </div>
+
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">01 · PERSONAL VERIFICATION</span>
+      <h2 class="display">Student Identity &amp; Parameter K</h2>
+      <p>Every dimension and memory address is mathematically locked to your university roll number.</p>
+    </div>
+
+    <div class="card k-card">
+      <div class="k-head">
+        <span class="tile"><svg class="icon"><use href="#i-grid"/></svg></span>
+        <div class="k-head-txt">
+          <h3>Personal Parameter K Engine <span class="pill-soft">K.R. Mangalam University</span></h3>
+          <p>Evaluates parameter K from the last two digits of the student university roll number.</p>
+        </div>
+        <div class="roll-input">
+          <input id="rollInput" value="2501630022" inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="University roll number">
+          <button class="icon-btn" id="rollReset" type="button" title="Reset to submitted roll number"><svg class="icon"><use href="#i-refresh"/></svg></button>
+        </div>
+      </div>
+
+      <div class="k-calc">
+        <div>
+          <span class="eyebrow">CALCULATED PARAMETER K</span>
+          <div class="k-value">K = <b id="kValue">22</b><small id="kDerived">(derived from Roll ending in 22)</small></div>
+        </div>
+        <div class="k-mods">
+          <span class="k-mod"><small>K MOD 3</small><b id="kMod3">1</b></span>
+          <span class="k-mod"><small>K MOD 4</small><b id="kMod4">2</b></span>
+        </div>
+      </div>
+
+      <div class="k-stats">
+        <div class="stat"><span class="eyebrow">BOX START ROW</span><b id="kStartRow">Row 22</b></div>
+        <div class="stat"><span class="eyebrow">BOX DIMENSIONS</span><b id="kDims">64px × 20h</b></div>
+        <div class="stat"><span class="eyebrow">WORDS / ROW</span><b id="kWords">4 words (64 bits)</b></div>
+        <div class="stat"><span class="eyebrow">SCREEN ADDR MAP</span><b id="kAddr">17088 .. 17699</b></div>
+      </div>
+
+      <div class="k-req">
+        <svg class="icon"><use href="#i-shield"/></svg>
+        <div>
+          <b id="kReqTitle">Part B Requirement (K mod 3 = 1):</b>
+          <p id="kReqText">Case 1: duplicate label declarations are detected while parsing — the initial definition is preserved and a diagnostic is reported.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head spaced">
+      <span class="eyebrow">02 · CORE ASSIGNMENT STRUCTURE</span>
+      <h2 class="display">The Three Pillars of the Hack Machine</h2>
+      <p>Each section corresponds strictly to the official university evaluation breakdown.</p>
+    </div>
+
+    <div class="pillars" id="pillars"></div>
+
+    <div class="card pipeline">
+      <div class="pipeline-head">
+        <div>
+          <span class="eyebrow">END-TO-END EXECUTION PIPELINE</span>
+          <h3>From Symbolic Assembly to Physical Pixels</h3>
+        </div>
+        <span class="live-note"><span class="dot"></span>Synchronous Execution Architecture</span>
+      </div>
+      <div class="pipeline-grid">
+        <div class="stage"><span class="eyebrow">STAGE 1</span><b>Box.asm</b><code>@KBD, D=M, (LOOP)</code></div>
+        <div class="stage"><span class="eyebrow">STAGE 2</span><b>Two-Pass Assembler</b><code>Symbol table &amp; K mod 3 check</code></div>
+        <div class="stage"><span class="eyebrow">STAGE 3</span><b>Box.hack</b><code>16-bit binary machine code</code></div>
+        <div class="stage"><span class="eyebrow">STAGE 4</span><b>Hack CPU (HDL)</b><code>ALU, A/D, PC &amp; Memory decoder</code></div>
+        <div class="stage"><span class="eyebrow">STAGE 5</span><b>Screen Memory</b><code id="pipeScreen">RAM[17088..17699] pixels</code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PART A ======================= -->
+<section id="part-a" class="section">
+  <div class="container">
+    <div class="card section-hero">
+      <span class="eyebrow-chip">PART A · HDL COMPUTER (2.5 MARKS)</span>
+      <div class="section-hero-row">
+        <div>
+          <h2 class="display">The Hack Machine, Described in HDL</h2>
+          <p>Three chips turn NAND gates into a complete Von Neumann computer. Select a chip to inspect its pin interface, source and design logic.</p>
+        </div>
+        <span class="pill-soft">3 chips · 128 lines</span>
+      </div>
+    </div>
+
+    <div class="card chip-card">
+      <div class="chip-head">
+        <div class="chip-head-txt">
+          <span class="meta-line"><svg class="icon"><use href="#i-check"/></svg>CORE CHIP · EXISTS &amp; VERIFIED</span>
+          <h3 id="chipTitle">Hack Central Processing Unit (CPU.hdl)</h3>
+          <p id="chipDesc"></p>
+        </div>
+        <div class="chip-actions">
+          <button class="btn btn-line" id="copyHdlBtn" type="button"><svg class="icon"><use href="#i-copy"/></svg>Copy HDL</button>
+          <a class="btn btn-dark" id="chipDownload" href="assets/downloads/CPU.hdl" download><svg class="icon"><use href="#i-download"/></svg>Download CPU.hdl</a>
+        </div>
+      </div>
+
+      <div class="io-grid">
+        <div class="io-col">
+          <span class="io-title">INPUT PINS INTERFACE</span>
+          <div id="ioIn"></div>
+        </div>
+        <div class="io-col">
+          <span class="io-title">OUTPUT PINS INTERFACE</span>
+          <div id="ioOut"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split split-a">
+      <div class="card code-card">
+        <div class="code-head">
+          <span class="code-file"><svg class="icon"><use href="#i-file"/></svg><b id="codeFileName">CPU.hdl</b></span>
+          <span class="code-meta" id="codeMeta">66 lines · Hardware Description Language</span>
+        </div>
+        <div class="code-body" id="hdlCode"></div>
+        <div class="chip-tabs" id="hdlTabs">
+          <button class="ptab active" data-chip="CPU.hdl">CPU.hdl</button>
+          <button class="ptab" data-chip="Memory.hdl">Memory.hdl</button>
+          <button class="ptab" data-chip="Computer.hdl">Computer.hdl</button>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <div class="card highlights">
+          <div class="card-title"><svg class="icon"><use href="#i-check"/></svg><h3>Hardware Logic Highlights</h3></div>
+          <div id="highlights"></div>
+        </div>
+        <div class="card notice">
+          <div class="card-title"><svg class="icon"><use href="#i-terminal"/></svg><h3>Official Verification Notice</h3></div>
+          <p>Hardware-level verification runs in the official nand2tetris Hardware Simulator (Java), which cannot execute inside a browser sandbox. The live playground and CPU emulator below reproduce the exact same instruction semantics in JavaScript.</p>
+          <div class="cmdbox">
+            <span>REPRODUCE ON HOST TERMINAL:</span>
+            <code>$ python3 assembler.py Box.asm</code>
+            <code>&gt; Wrote 47 instructions to Box.hack</code>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PART B ======================= -->
+<section id="part-b" class="section">
+  <div class="container">
+    <div class="card section-hero">
+      <span class="eyebrow-chip">PART B · PYTHON ASSEMBLER (3.0 MARKS)</span>
+      <div class="section-hero-row">
+        <div>
+          <h2 class="display">Two-Pass Assembler Playground</h2>
+          <p>Real-time two-pass translation engine: strips comments, detects duplicate labels (K mod 3), evaluates A/C instructions, allocates RAM variables and generates 16-bit binary.</p>
+        </div>
+        <a class="btn btn-dark" href="assets/downloads/assembler.py" download><svg class="icon"><use href="#i-download"/></svg>Download assembler.py</a>
+      </div>
+    </div>
+
+    <div class="card preset-bar">
+      <span class="eyebrow">LOAD PRESET PROGRAM:</span>
+      <div class="presets" id="presets">
+        <button class="preset active" data-preset="box">Box.asm (Capstone)</button>
+        <button class="preset" data-preset="add">Add.asm</button>
+        <button class="preset" data-preset="max">Max.asm</button>
+        <button class="preset" data-preset="rect">Rect.asm</button>
+        <button class="preset" data-preset="dup" id="dupPreset">Duplicate Label Test (K mod 3 = 1)</button>
+      </div>
+      <span class="status-chip" id="asmStatus"><span class="dot"></span>100% Assembled Cleanly</span>
+    </div>
+
+    <div class="split split-b">
+      <div class="card editor-card">
+        <div class="panel-head">
+          <span class="panel-title"><svg class="icon"><use href="#i-code"/></svg>ASSEMBLY SOURCE EDITOR (.ASM)</span>
+          <span class="panel-meta" id="lineCount">110 lines</span>
+        </div>
+        <div class="editor-wrap">
+          <div class="gutter" id="asmGutter"></div>
+          <textarea id="asmEditor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+        </div>
+        <div class="editor-foot">
+          <span>Edit or paste assembly to recompile instantly</span>
+          <button class="link-btn" id="resetAsmBtn" type="button">Reset to Box.asm</button>
+        </div>
+      </div>
+
+      <div class="card output-card">
+        <div class="panel-tabs" id="outputTabs">
+          <button class="ptab active" data-tab="hack">16-Bit Machine Code (.hack)</button>
+          <button class="ptab" data-tab="symbols">Symbol Table</button>
+          <button class="ptab" data-tab="python">Python Script</button>
+        </div>
+        <div class="output-toolbar">
+          <button class="btn btn-line btn-sm" id="copyOutBtn" type="button"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+          <button class="btn btn-dark btn-sm" id="downloadHackBtn" type="button"><svg class="icon"><use href="#i-download"/></svg>.hack</button>
+          <span class="toolbar-note" id="downloadNote"></span>
+        </div>
+        <div class="output-body">
+          <div class="tab-pane active" data-pane="hack">
+            <div class="hack-list" id="hackList"></div>
+          </div>
+          <div class="tab-pane" data-pane="symbols">
+            <div class="symbol-wrap" id="symbolTable"></div>
+          </div>
+          <div class="tab-pane" data-pane="python">
+            <div class="code-mini" id="pyCode"></div>
+          </div>
+        </div>
+        <div class="output-stats">
+          <div><small>ROM INSTRUCTIONS</small><b id="statRom">47</b></div>
+          <div><small>LABELS</small><b id="statLabels">5</b></div>
+          <div><small>VARIABLES</small><b id="statVars">5</b></div>
+          <div><small>WARNINGS</small><b id="statWarn">0</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PART C ======================= -->
+<section id="part-c" class="section">
+  <div class="container">
+    <div class="card section-hero">
+      <span class="eyebrow-chip">PART C · BOX PROGRAM &amp; CPU SOFTWARE EMULATOR (2.5 MARKS)</span>
+      <div class="section-hero-row">
+        <div>
+          <h2 class="display">Hack CPU &amp; Screen Emulator</h2>
+          <p>Real 16-bit Von Neumann software emulator executing Box.hack. Canvas pixels are painted directly from emulator SCREEN memory (RAM[16384..24575]).</p>
+        </div>
+        <span class="status-chip" id="emuStatus"><svg class="icon"><use href="#i-keyboard"/></svg>Key Released (Box Erased)</span>
+      </div>
+    </div>
+
+    <div class="split split-c">
+      <div class="card emulator-card">
+        <div class="panel-head">
+          <span class="panel-title"><svg class="icon"><use href="#i-monitor"/></svg>HACK SCREEN MEMORY DISPLAY (512 × 256 PIXELS)</span>
+          <span class="panel-meta">Address: SCREEN (16384) to KBD (24576)</span>
+        </div>
+        <div class="screen-frame">
+          <canvas id="emuCanvas" width="512" height="256" aria-label="Hack screen"></canvas>
+          <div class="screen-axis">
+            <span>Row 0 (Col 0..511)</span>
+            <span id="axisBox">Box Location: Row 22 to 41 · Cols 0 to 63</span>
+            <span>Row 255</span>
+          </div>
+        </div>
+        <div class="emu-controls">
+          <button class="btn btn-line" id="btnPause" type="button"><svg class="icon"><use href="#i-pause"/></svg><span>Pause CPU</span></button>
+          <button class="btn btn-line" id="btnStep" type="button"><svg class="icon"><use href="#i-step"/></svg>Single Step</button>
+          <button class="btn btn-line" id="btnReset" type="button"><svg class="icon"><use href="#i-reset"/></svg>Reset</button>
+          <button class="btn btn-dark hold-btn" id="btnHold" type="button"><svg class="icon"><use href="#i-keyboard"/></svg>HOLD KEY TO DRAW BOX</button>
+          <div class="speed">
+            <span>Speed:</span>
+            <input type="range" id="speedRange" min="1000" max="60000" step="1000" value="20000">
+            <b id="speedVal">20,000c</b>
+          </div>
+        </div>
+        <div class="emu-note">
+          <b>How the Physical Keyboard Polling Works:</b>
+          <p>Press and hold any key on your physical keyboard. The browser captures the keystroke, updates the emulator’s keyboard register at address 24576, and the running Box.hack machine loop writes −1 into screen rows <span id="noteRows">22 to 41</span>. Releasing the key writes 0 and erases the box.</p>
+        </div>
+      </div>
+
+      <aside class="side-stack">
+        <div class="card registers">
+          <div class="panel-head tight">
+            <span class="panel-title"><svg class="icon"><use href="#i-bolt"/></svg>Live CPU Registers</span>
+            <span class="pill-soft mono" id="cycleChip">Cycle #0</span>
+          </div>
+          <div class="reg-grid">
+            <div class="reg"><small>PROGRAM COUNTER</small><b>PC = <span id="regPC">0</span></b></div>
+            <div class="reg"><small>A-REGISTER</small><b>A = <span id="regA">0</span></b></div>
+            <div class="reg"><small>D-REGISTER</small><b>D = <span id="regD">0</span></b></div>
+            <div class="reg"><small>KBD MEMORY</small><b>RAM[24576] = <span id="regKbd">0</span></b></div>
+          </div>
+          <div class="reg wide">
+            <small>ROM INSTRUCTION CODE</small>
+            <b class="mono" id="romBits">0000000000000000</b>
+          </div>
+        </div>
+
+        <div class="card monitor">
+          <div class="panel-head tight">
+            <span class="panel-title"><svg class="icon"><use href="#i-check"/></svg>Screen Memory Address Monitor</span>
+          </div>
+          <p class="monitor-desc">Direct read from emulator memory words showing the boundary and box contents.</p>
+          <div id="monitorRows"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= SUBMISSION ======================= -->
+<section id="submission" class="section">
+  <div class="container">
+    <div class="card section-hero submission-hero">
+      <div class="section-hero-row">
+        <div>
+          <span class="eyebrow-chip">FINAL SUBMISSION · OFFICIAL CAPSTONE DELIVERABLES</span>
+          <h2 class="display">Assignment Deliverables Package</h2>
+          <p>Every file required for grading is included and available for direct one-click download — chips, sources and the compiled machine code.</p>
+        </div>
+        <a class="btn btn-dark" href="assets/downloads/project-files.zip" download><svg class="icon"><use href="#i-download"/></svg>DOWNLOAD COMPLETE PACKAGE</a>
+      </div>
+    </div>
+
+    <div class="card checklist">
+      <div class="checklist-head">
+        <div>
+          <h3>K.R. Mangalam University Evaluation Checklist</h3>
+          <p>Course: ETCNTC301 · School of Engineering &amp; Technology · Student Roll: <span id="checkRoll">2501630022</span></p>
+        </div>
+        <span class="pill-soft">10.0 / 10.0 Marks Scope</span>
+      </div>
+      <div class="check-grid" id="checklist"></div>
+    </div>
+
+    <div class="card inventory">
+      <div class="inventory-head">
+        <div class="card-title"><svg class="icon"><use href="#i-stack"/></svg><h3>Files Inventory &amp; Direct Downloads</h3></div>
+        <span class="panel-meta" id="fileCount">9 Deliverable Files Available</span>
+      </div>
+      <div class="files-grid" id="files"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="foot-brand">
+      <div class="brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-cpu"/></svg></span>
+        <span class="brand-text"><strong>HACK COMPUTER LAB</strong></span>
+      </div>
+      <p>Capstone Engineering Project: <b>Make the Computer Draw a Box.</b> From elementary NAND logic gates up to complete machine code execution on custom hardware.</p>
+      <span class="foot-course">Course: ETCNTC301 · Nand to Tetris - I</span>
+    </div>
+
+    <div class="foot-col">
+      <span class="eyebrow">ASSIGNMENT MODULES</span>
+      <ul class="foot-list">
+        <li><span>Part A: Hack Computer HDL (2.5 Marks)</span></li>
+        <li><span>Part B: Python Assembler (3.0 Marks)</span></li>
+        <li><span>Part C: Box Program &amp; Emulator (2.5 Marks)</span></li>
+        <li><span>Final Submission Deliverables</span></li>
+      </ul>
+    </div>
+
+    <div class="foot-col">
+      <span class="eyebrow">HARDWARE PARAMETERS (K=<span id="footK">22</span>)</span>
+      <dl class="foot-dl">
+        <div><dt>Box Starting Row:</dt><dd id="footStartRow">Row 22</dd></div>
+        <div><dt>Box Dimensions:</dt><dd id="footDims">64 × 20 rows</dd></div>
+        <div><dt>Screen Start Addr:</dt><dd id="footStartAddr">17088 (Word 0)</dd></div>
+        <div><dt>Screen End Addr:</dt><dd id="footEndAddr">17699 (Word 3)</dd></div>
+      </dl>
+    </div>
+
+    <div class="foot-record">
+      <span class="eyebrow">UNIVERSITY RECORD</span>
+      <div class="record-card">
+        <p><small>Student:</small> <b id="footStudent">Jatin Rajour</b></p>
+        <p><small>Roll:</small> <b id="footRoll">2501630022</b></p>
+        <p><small>School:</small> School of Engineering &amp; Technology</p>
+        <p><small>University:</small> K.R. Mangalam University</p>
+        <p><small>Evaluation:</small> 10 Marks Individual Capstone</p>
+      </div>
+    </div>
+  </div>
+  <div class="container foot-bottom">
+    <span>©2026–2027 K.R. Mangalam University · ETCNTC301 Capstone Submission</span>
+    <span class="foot-verify"><svg class="icon"><use href="#i-shield"/></svg>Strict Assignment-Compliant Architecture · Empirically Verified</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script src="js/data.js"></script>
+<script src="js/assembler.js"></script>
+<script src="js/emulator.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
