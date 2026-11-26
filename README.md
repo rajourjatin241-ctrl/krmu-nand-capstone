@@ -6,7 +6,7 @@ Everything runs in the browser — real HDL sources, a live two-pass assembler, 
 
 ## Live demo
 
-> GitHub Pages link will appear here once published.
+**https://rajourjatin241-ctrl.github.io/krmu-nand-capstone/**
 
 ## What's inside
 
